@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Covid-19 Curitiba</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+    <style type="text/css">
+    	body {	
+		  font-family: Helvetica Neue, Arial, sans-serif;
+		  text-align: center;
+		}
+		.wrapper {
+		  max-width: 800px;
+		  margin: 50px auto;
+		}
+		h1 {
+		  font-weight: 200;
+		  font-size: 3em;
+		  margin: 0 0 0.1em 0;
+		}
+		h2 {
+		  font-weight: 200;
+		  font-size: 0.9em;
+		  margin: 0 0 50px;
+		  color: #999;
+		}
+		a {
+		  margin-top: 50px;
+		  display: block;
+		  color: #3e95cd;
+		}
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <h1>Evolução da Doença</h1>
+      <h2>Número de casos confirmados de covid-19 em Curitiba 2020</h2>
+      <canvas id="confirmados" width="1600" height="900" bcolor="#8a9ae6"></canvas>
+    </div>
+	
+	<div class="wrapper">
+      <h1>Casos Fatais</h1>
+      <h2>Número de óbitos confirmados por covid-19 em Curitiba 2020</h2>
+      <canvas id="obitos" width="1600" height="900" bcolor="#d64119"></canvas>
+    </div>
+    
+    <div class="wrapper">
+      <h1>Pessoas Recuperadas</h1>
+      <h2>Número de pessoas curadas do covid-19 em Curitiba 2020</h2>
+      <canvas id="recuperados" width="1600" height="900" bcolor="#479c81"></canvas>
+    </div>    
+
+    <div class="wrapper">
+      <h1>RT</h1>
+      <h2>Taxa de transmissão do covid-19 em Curitiba 2020</h2>
+      <canvas id="rt" width="1600" height="900" bcolor="#ec5d04"></canvas>
+    </div>
+    <div class="wrapper">
+      <h1>Previsão</h1>
+      <h2>Previsão do número de casos em Curitiba</h2>
+      <canvas id="previsao" width="1600" height="900" bcolor="#00ff00"></canvas>
+    </div>   
+    <script type="text/javascript">
+    	consulta("confirmados")
+    	consulta("obitos")
+    	consulta("recuperados")
+    	consulta("rt")
+    	consulta_previsao("previsao")
+
+		function drawChart(campo, dataset){
+			var ctx = document.getElementById(campo);
+			var borderColor = ctx.getAttribute("bcolor");
+			var myChart = new Chart(ctx, {
+		  	type: 'line',
+		  	data: {
+		    	labels: dataset.datas,
+		    	datasets: [
+		      	{	 
+			        data: dataset[campo],
+			        label: `${campo} em Curitiba`,
+			        borderColor,
+			        fill: false
+		      	},
+		    	]
+		  	}
+			});
+		}
+
+		function drawChartPrevisao(dataset){
+			var ctx = document.getElementById("previsao");
+			var borderColor = ctx.getAttribute("bcolor");
+			var myChart = new Chart(ctx, {
+		  	type: 'line',
+		  	data: {
+		    	labels: dataset.datas,
+		    	datasets: [
+		      	{	 
+			        data: dataset.num_casos_funcao,
+			        label: `Tendência dos dados`,
+			        borderColor,
+			        fill: false,
+			        order: 1
+		      	},
+		      	{	 
+			        data: dataset.num_casos,
+			        label: `Número de casos em Curitiba`,
+			        borderColor: "#000",
+			        fill: true,
+			        backgroundColor:"#000",
+		         	showLine: false, 
+		         	order: 2
+		      	},
+		      	{	 
+			        data: dataset.m_erro,
+			        label: `Previsão próximos 7 dias`,
+			        borderColor: "#ff0000",
+			        fill:false,
+		         	order: 3
+		      	},
+		      	{	 
+			        data: dataset.acima_95,
+			        label: `Margem acima 95%`,
+			        borderColor: "#b19cd9",
+			        fill:'-1',
+		         	order: 4,
+		         	pointRadius:0
+		      	},
+		      	{	 
+			        data: dataset.abaixo_95,
+			        label: `Margem abaixo 95%`,
+			        borderColor: "#b19cd9",
+			        fill:'-2',
+		         	order: 4,
+		         	pointRadius:0
+		      	}
+		    	]
+		  	}
+			});
+		}
+		async function consulta_previsao(){
+		  try {
+		    const response = await axios.get('http://localhost:8080/previsao/');
+		    console.log(response.data)
+		    drawChartPrevisao(response.data)
+		  } catch (error) {
+		    console.error(error);
+		  }}
+
+		async function consulta(campo){
+		  try {
+		    const response = await axios.get('http://localhost:8080/consulta/'+campo);
+		    console.log(response.data)
+		    drawChart(campo, response.data)
+		  } catch (error) {
+		    console.error(error);
+		  }}
+    </script>
+    <!-- <script src="script.js"></script> -->
+  </body>
+</html>
