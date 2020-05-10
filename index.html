@@ -76,6 +76,11 @@
       <canvas id="rt" width="1600" height="900" bcolor="#ec5d04"></canvas>
     </div>
     <div class="wrapper">
+      <h1>rt</h1>
+      <h2>Taxa de transmissão do covid-19 em Curitiba 2020</br>Métrica computada de acordo com Thompson et al. (2019)</h2>
+      <canvas id="rt_thompson" width="1600" height="900" bcolor="#ec5d04"></canvas>
+    </div>
+    <div class="wrapper">
       <h1>Previsão de Casos Totais</h1>
       <h2>Previsão do número de casos em Curitiba</h2>
       <canvas id="previsao" width="1600" height="900" bcolor="#00ff00"></canvas>
@@ -105,7 +110,8 @@
     	consulta("confirmados")
     	consulta("obitos")
     	consulta("recuperados")
-    	consulta_rt()
+    	consulta_rt("rt","1")
+    	consulta_rt("rt_thompson","2")
     	consulta_previsao("previsao")
     	consulta_previsao_diario("previsao_diario")
 
@@ -128,8 +134,8 @@
 			});
 		}
 
-		function drawChartRT(dataset){
-			var ctx = document.getElementById("rt");
+		function drawChartRT(campo, dataset){
+			var ctx = document.getElementById(campo);
 			var borderColor = ctx.getAttribute("bcolor");
 			var myChart = new Chart(ctx, {
 		  	type: 'line',
@@ -159,7 +165,17 @@
 		         	pointRadius:0
 		      	}
 		    	]
-		  	}
+		  	},
+		  	options: {
+			scales: {
+				yAxes: [{
+					ticks: {
+						beginAtZero: true,
+						stepSize: 1,
+					},
+				}]
+			},
+			}
 			});
 		}
 
@@ -215,12 +231,12 @@
 
 			});
 		}
-		async function consulta_rt(){
+		async function consulta_rt(campo, tipo){
 		  try {
-		    const response = await axios.get('https://covid-19-puc-dashboard.herokuapp.com/consulta_rt/1');
-		    // const response = await axios.get('http://localhost:8080/consulta_rt/1');
+		    const response = await axios.get('https://covid-19-puc-dashboard.herokuapp.com/consulta_rt/'+tipo);
+		    // const response = await axios.get('http://localhost:8080/consulta_rt/'+tipo);
 		    console.log('RT:'+response.data)
-		    drawChartRT(response.data)
+		    drawChartRT(campo, response.data)
 		  } catch (error) {
 		    console.error(error);
 		  }}

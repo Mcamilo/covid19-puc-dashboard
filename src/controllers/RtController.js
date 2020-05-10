@@ -22,11 +22,11 @@ function filter_csv(par, dataset){
       c['datas'] = c['datas'] || []
       c['datas'].push(v.data)
       c['valor'] = c['valor'] || []
-      c['valor'].push(v.valor/1000)
+      c['valor'].push(v.valor)
       c['abaixo_95'] = c['abaixo_95'] || []
-      c['abaixo_95'].push(v.abaixo_95/1000)
+      c['abaixo_95'].push(v.abaixo_95)
       c['acima_95'] = c['acima_95'] || []
-      c['acima_95'].push(v.acima_95/1000)
+      c['acima_95'].push(v.acima_95)
     }
     return c;
   }, {})
