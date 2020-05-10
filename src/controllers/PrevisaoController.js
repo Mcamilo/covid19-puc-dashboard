@@ -1,14 +1,14 @@
 const csv = require('csv-parser')
 const fs = require('fs')
 
-async function read_csv_previsao(){
+async function read_csv_previsao(tipo){
   let promise = new Promise((resolve, reject) => {
     const results = [];
     fs.createReadStream('Covid_data/Tabela_dados_covid_forecast.csv')
       .pipe(csv())
       .on('data', (data) => results.push(data))
       .on('end', () => {
-        const filtered_data = filter_csv(results)
+        const filtered_data = filter_csv(results, tipo)
         console.log("Done Reading Forecast Data");
         resolve(filtered_data)
       });
@@ -16,9 +16,9 @@ async function read_csv_previsao(){
   return promise
 }
 
-function filter_csv(dataset){
+function filter_csv(dataset, tipo){
   const filtered_data = dataset.reduce((c,v)=>{
-    if (v.tipo === "acumulado" && v.forecast == 0) {
+    if (v.tipo === tipo && v.forecast == 0) {
       c['datas'] = c['datas'] || []
       c['datas'].push(v.data)
       c['num_casos'] = c['num_casos'] || []
@@ -31,7 +31,7 @@ function filter_csv(dataset){
       c['abaixo_95'].push(v.abaixo_95)
       c['acima_95'] = c['acima_95'] || []
       c['acima_95'].push(v.acima_95)
-    }else if (v.tipo === "acumulado" && v.forecast == 1) {
+    }else if (v.tipo === tipo && v.forecast == 1) {
       c['datas'] = c['datas'] || []
       c['datas'].push(v.data)
       c['m_erro'] = c['m_erro'] || []
@@ -49,7 +49,12 @@ function filter_csv(dataset){
 
 module.exports = {
     async previsao(req, res){
-      const response = await read_csv_previsao()
+      const response = await read_csv_previsao('acumulado')
+      console.log("Done");
+      res.json(response)
+    },
+    async previsao_diario(req, res){
+      const response = await read_csv_previsao('diario')
       console.log("Done");
       res.json(response)
     }
