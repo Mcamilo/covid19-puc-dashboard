@@ -7,7 +7,6 @@ const routes = express.Router();
 const ConsultaController = require('./controllers/ConsultaController')
 const PrevisaoController = require('./controllers/PrevisaoController')
 const RtController = require('./controllers/RtController')
-const ObitosController = require('./controllers/ObitosController')
 const AuthMiddleware = require('./middlewares/Authmiddleware')
 
 routes.get('/',(req,res)=>{
@@ -33,6 +32,5 @@ routes.get('/consulta/:campo', ConsultaController.read)
 routes.get('/previsao/', PrevisaoController.previsao)
 routes.get('/previsao_diario/', PrevisaoController.previsao_diario)
 routes.get('/consulta_rt/:tipo', RtController.read)
-routes.get('/obitos/', ObitosController.read)
 
 module.exports = routes;
