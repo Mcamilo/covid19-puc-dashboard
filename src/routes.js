@@ -8,29 +8,18 @@ const ConsultaController = require('./controllers/ConsultaController')
 const PrevisaoController = require('./controllers/PrevisaoController')
 const RtController = require('./controllers/RtController')
 const AuthMiddleware = require('./middlewares/Authmiddleware')
+const PerfilController = require('./controllers/PerfilController')
 
-routes.get('/',(req,res)=>{
-    return res.status(200).json({message:`Server in On`})
+routes.get('/', AuthMiddleware.checkToken, (req,res)=>{
+    return res.status(200).json({success:true,message:`Server in On`})
 });
 
-routes.post('/', (req,res)=>{
-    const {email, senha} = req.body
-    const mockUsername = "admin"
-    const mockPassword = "admin"
-    if (mockUsername === email && mockPassword === mockPassword) {
-      const secret = process.env.JWT_SECRET
-      const token = jwt.sign({email},secret,{
-            expiresIn: 86400
-        })
-      return res.send({token})
-    }
-    return res.status(500).send("error")
-})
+routes.post('/', PerfilController.createToken)
 
 // Read Routes
-routes.get('/consulta/:campo', ConsultaController.read)
-routes.get('/previsao/', PrevisaoController.previsao)
-routes.get('/previsao_diario/', PrevisaoController.previsao_diario)
-routes.get('/consulta_rt/:tipo', RtController.read)
+routes.get('/consulta/:campo', AuthMiddleware.checkToken, ConsultaController.read)
+routes.get('/previsao/', AuthMiddleware.checkToken, PrevisaoController.previsao)
+routes.get('/previsao_diario/', AuthMiddleware.checkToken, PrevisaoController.previsao_diario)
+routes.get('/consulta_rt/:tipo', AuthMiddleware.checkToken, RtController.read)
 
 module.exports = routes;

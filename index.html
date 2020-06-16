@@ -16,7 +16,7 @@
 		  overflow-x: hidden;
 		}
 		.jumbotron {
-         	padding: 2rem 1rem;
+         	padding: 0rem 1rem;
          	background-color: transparent;
     	}
 		.wrapper {
@@ -92,27 +92,55 @@
 			display: inline-block;
 			background-color: #333;
 		}
-    #logged-content{
+    #logged-content, #barra{
       display: none;
+    }
+    .barra-usuario{
+      background: #a92439;
+      color: white;
+    }
+    .barra-usuario ul{
+      text-align: right;
+    }
+    .barra-usuario ul li{
+      display: inline-block;
+    }
+    .btn-primary {
+      color: #fff;
+      background-color: #a92439;
+      border-color: #941e31;
+    }
+    .btn-primary:hover {
+      color: #fff;
+      background-color: #e42c49;
+      border-color: #941e31;
+
     }
     </style>
   </head>
   <body>
+    <div class="barra-usuario" id="barra">
+      <ul>
+        <li id='username'></li>
+        <li><button type="submit" class="btn btn-default" onclick="logout()">Logout</button></li>
+      </ul>
+
+    </div>
   	<div class="jumbotron text-center">
 	  <h1><img alt="PUCPR" style="width:280px;height:auto;" title="PUCPR" src="https://www.iasp.ws/media/imagegenerator/290x290/upscale(false)/canvascolor(0xffffffff)/2017_07_31-Pucpr.png">
 	  </h1>
 	</div>
-  <div class="row" id="login-form" style="background: #d9d9e4;">
+  <div class="row" id="login-form" style="background: #d9d9e4; padding:1em;">
     <div class="col-12">
       <div class="wrapper">
       <form action="" id="login-form">
         <div class="form-group">
           <label for="email">Email:</label>
-          <input type="text" class="form-control" id="email">
+          <input type="email" class="form-control" id="email" placeholder="Seu Email">
         </div>
         <div class="form-group">
           <label for="pwd">Senha:</label>
-          <input type="password" class="form-control" id="pwd">
+          <input type="password" class="form-control" id="pwd" placeholder="Senha Fornecida">
         </div>
         <button type="submit" class="btn btn-primary">Enviar</button>
       </form>
@@ -239,35 +267,146 @@
 </div>
 
   <script type="text/javascript">
+    const base_url = 'https://covid-19-puc-dashboard.herokuapp.com/'
+    // const base_url = 'http://localhost:8080/'
+
+    const TOKEN_KEY = "@Covid-Token";
+    const USERNAME_KEY = "@Covid-User";
+    const isAuthenticated = () => localStorage.getItem(TOKEN_KEY) !== null;
+    const getToken = () => localStorage.getItem(TOKEN_KEY);
+    const getUser = () => localStorage.getItem(USERNAME_KEY)
+
+    const login = (token,username) => {
+      localStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem(USERNAME_KEY, username)
+    };
+
+    const logout = () => {
+      localStorage.removeItem(TOKEN_KEY);
+      location.reload();
+    };
     var form = document.getElementById("login-form");
     form.addEventListener("submit", my_func, true);
-    async function my_func(event) {
-    event.preventDefault();
-    try {
-      var email = document.getElementById('email').value
-      var pwd = document.getElementById('pwd').value
-      const response = await axios.post('https://covid-19-puc-dashboard.herokuapp.com/',{email, senha:pwd});
-      defaultGreen()
-      defaultYellow()
-      defaultOrange()
-      defaultRed()
-      consulta_semaforo()
-      consulta("confirmados")
-      consulta("obitos")
-      consulta("recuperados")
-      consulta_barra("ocupacao_uti_adulto")
-      consulta_rt("rt_thompson","2")
-      consulta_previsao("previsao")
-      consulta_previsao_diario("previsao_diario")
-      document.getElementById('login-form').style.display = "none"
-      document.getElementById('logged-content').style.display = "inherit"
-      alert("Sucesso")
-      console.log('RT:'+JSON.stringify(response.data))
-    } catch (error) {
-      alert("Conta não cadastrada")
-      console.error(error);
+
+    // Verifica se esta logado
+    Authentication()
+
+    async function Authentication(){
+      if (isAuthenticated()){
+        axios.defaults.headers.common['Authorization'] = getToken();
+        // Verifica de o Token esta expirado
+        if (await isExpired()) {
+          alert("Sessão Expirada.\nPor favor faça o login novamente.")
+          logout()
+        }
+        document.getElementById('login-form').style.display = "none"
+        document.getElementById('logged-content').style.display = "inherit"
+        document.getElementById('username').innerHTML = "Bem vindo <i>"+getUser()+"</i>"
+        document.getElementById('barra').style.display = 'inherit'
+        defaultGreen()
+        defaultYellow()
+        defaultOrange()
+        defaultRed()
+        consulta_semaforo()
+        consulta("confirmados")
+        consulta("obitos")
+        consulta("recuperados")
+        consulta_barra("ocupacao_uti_adulto")
+        consulta_rt("rt_thompson","2")
+        consulta_previsao("previsao")
+        consulta_previsao_diario("previsao_diario")
+      }else {
+        document.getElementById('login-form').style.display = "inherit"
+        document.getElementById('logged-content').style.display = "none"
+        document.getElementById('barra').style.display = 'none'
+      }
     }
+
+    async function my_func(event) {
+      event.preventDefault();
+      try {
+        var email = document.getElementById('email').value
+        var pwd = document.getElementById('pwd').value
+        const response = await axios.post(base_url,{email, senha:pwd});
+        // console.log(response.data)
+        login(response.data.token, response.data.email)
+
+        alert("Sucesso")
+        Authentication()
+      } catch (error) {
+        alert("Conta não cadastrada")
+        console.error(error);
+      }
     };
+
+    async function isExpired(){
+      try {
+        const response = await axios.get(base_url);
+        if(response.data.success){
+          return false;
+        }
+        return true;
+      } catch (error) {
+        console.error(error);
+      }}
+
+    async function consulta_rt(campo, tipo){
+      try {
+        const response = await axios.get(base_url+'consulta_rt/'+tipo);
+
+        drawChartRT(campo, response.data)
+      } catch (error) {
+        alert("Erro: contatar a equipe de desenvolvimento.")
+        console.error(error);
+      }}
+
+    async function consulta_previsao(campo){
+      try {
+        const response = await axios.get(base_url+'previsao/');
+        drawChartPrevisao(response.data, campo)
+      } catch (error) {
+        console.error(error);
+      }}
+
+    async function consulta_previsao_diario(campo){
+      try {
+        const response = await axios.get(base_url+'previsao_diario/');
+        drawChartPrevisao(response.data, campo)
+      } catch (error) {
+        console.error(error);
+      }}
+
+    async function consulta(campo){
+      try {
+        const response = await axios.get(base_url+'consulta/'+campo);
+        drawChart(campo, response.data)
+      } catch (error) {
+        console.error(error);
+      }}
+
+    async function consulta_barra(campo){
+      try {
+        const response = await axios.get(base_url+'consulta/'+campo);
+        drawChart_barra(campo, response.data)
+      } catch (error) {
+        console.error(error);
+      }}
+
+    async function consulta_semaforo(){
+      try {
+        const response = await axios.get(base_url+'consulta_rt/2');
+        var rt_semaforo = response.data.valor[response.data.valor.length-1]
+      } catch (error) {
+        console.error(error);
+      }
+      try {
+        const response = await axios.get(base_url+'consulta/ocupacao_uti_adulto');
+        var ocupacao_semaforo = response.data.ocupacao_uti_adulto[response.data.ocupacao_uti_adulto.length-1]
+      } catch (error) {
+        console.error(error);
+      }
+      drawSemaforo(rt_semaforo,ocupacao_semaforo)
+    }
 
 		function drawChart(campo, dataset){
 			var ctx = document.getElementById(campo);
@@ -433,69 +572,7 @@
 
 			});
 		}
-		async function consulta_rt(campo, tipo){
-		  try {
-		    const response = await axios.get('https://covid-19-puc-dashboard.herokuapp.com/consulta_rt/'+tipo);
-		    // const response = await axios.get('http://localhost:8080/consulta_rt/'+tipo);
-		    console.log('RT:'+JSON.stringify(response.data))
-		    drawChartRT(campo, response.data)
-		  } catch (error) {
-		    console.error(error);
-		  }}
 
-		async function consulta_previsao(campo){
-		  try {
-		    const response = await axios.get('https://covid-19-puc-dashboard.herokuapp.com/previsao/');
-		    // const response = await axios.get('http://localhost:8080/previsao');
-		    console.log(response.data)
-		    drawChartPrevisao(response.data, campo)
-		  } catch (error) {
-		    console.error(error);
-		  }}
-
-		async function consulta_previsao_diario(campo){
-		  try {
-		    const response = await axios.get('https://covid-19-puc-dashboard.herokuapp.com/previsao_diario/');
-		    // const response = await axios.get('http://localhost:8080/previsao_diario');
-		    console.log(response.data)
-		    drawChartPrevisao(response.data, campo)
-		  } catch (error) {
-		    console.error(error);
-		  }}
-		async function consulta(campo){
-		  try {
-		    // const response = await axios.get('http://localhost:8080/consulta/'+campo);
-		    const response = await axios.get('https://covid-19-puc-dashboard.herokuapp.com/consulta/'+campo);
-		    console.log(response.data)
-		    drawChart(campo, response.data)
-		  } catch (error) {
-		    console.error(error);
-		  }}
-		async function consulta_barra(campo){
-		  try {
-		    // const response = await axios.get('http://localhost:8080/consulta/'+campo);
-		    const response = await axios.get('https://covid-19-puc-dashboard.herokuapp.com/consulta/'+campo);
-		    console.log(response.data)
-		    drawChart_barra(campo, response.data)
-		  } catch (error) {
-		    console.error(error);
-		  }}
-	  	async function consulta_semaforo(){
-	  		try {
-			    const response = await axios.get('https://covid-19-puc-dashboard.herokuapp.com/consulta_rt/2');
-		    	var rt_semaforo = response.data.valor[response.data.valor.length-1]
-		  	} catch (error) {
-		    	console.error(error);
-		  	}
-		  	try {
-			    const response = await axios.get('https://covid-19-puc-dashboard.herokuapp.com/consulta/ocupacao_uti_adulto');
-		    	var ocupacao_semaforo = response.data.ocupacao_uti_adulto[response.data.ocupacao_uti_adulto.length-1]
-		  	} catch (error) {
-		    	console.error(error);
-		  	}
-
-		  	drawSemaforo(rt_semaforo,ocupacao_semaforo)
-	  	}
 
 	function defaultGreen() {
 	  document.getElementById('green').style.backgroundColor = "rgba(0, 128, 0, 0.1)";
@@ -518,7 +595,7 @@
 		  	document.getElementById('green').style.backgroundColor = "rgba(0, 128, 0)";
 		}else if(rt < 1 && ocupacao <= 70){
 		  	document.getElementById('yellow').style.backgroundColor = "rgba(255, 255, 0)";
-		}else if(rt >= 1 && ocupacao > 70){
+		}else if(rt >= 1 || ocupacao > 70){
   			document.getElementById('orange').style.backgroundColor = "rgb(255, 165, 0)"
 		}else{
 	  		document.getElementById('red').style.backgroundColor = "rgb(255, 0, 0)";

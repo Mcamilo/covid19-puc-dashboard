@@ -12,7 +12,7 @@ let checkToken = (req, res, next) => {
       if (err) {
         return res.json({
             success: false,
-            message: 'Token is not valid'
+            err
         });
       } else {
         req.decoded = decoded;
