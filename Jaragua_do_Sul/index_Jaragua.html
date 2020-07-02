@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Covid-19 Curitiba</title>
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+  	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+    <style type="text/css">
+    	body {
+		  font-family: Helvetica Neue, Arial, sans-serif;
+		  text-align: center;
+		  overflow-x: hidden;
+		}
+		.jumbotron {
+         	padding: 0rem 1rem;
+         	background-color: transparent;
+    	}
+		.wrapper {
+		  max-width: 800px;
+		  margin: 50px auto;
+		}
+		h1 {
+		  font-weight: 200;
+		  font-size: 3em;
+		  margin: 0 0 0.1em 0;
+		}
+		h2 {
+		  font-weight: 200;
+		  font-size: 0.9em;
+		  margin: 0 0 50px;
+		  color: #999;
+		}
+		a {
+		  /*margin-top: 50px;*/
+		  display: block;
+		  color: #3e95cd;
+		}
+		ul{
+			text-align: left;
+			padding: 1em;
+		}
+		li{
+			padding: 0.25em;
+		}
+		#controlPanel {
+		  	margin: 0 auto;
+		    padding: 20px;
+		    max-width: 500px;
+		}
+
+		.button {
+			height: 50px;
+		  	border-radius: 10px;
+		  	padding: 20px;
+		  	text-align: center;
+		  	margin: 25px auto;
+		  	display: block;
+		}
+
+		#traffic-light {
+		  float: left;
+		  background-color: #333;
+		  border-radius: 40px;
+		  margin: 0.5em;
+		  padding: 20px;
+		  border: 1px solid white;
+		}
+
+		.bulb {
+		  height: 50px;
+		  width: 50px;
+		  background-color: #111;
+		  border-radius: 50%;
+		  margin: 25px auto;
+		  transition: background 500ms;
+		}
+		.captionSpan {
+		  height: 25px;
+		  width: 25px;
+		  background-color: #111;
+		  border-radius: 50%;
+		  /*display: inline-block;*/
+		  float: left;
+		}
+		#outer{
+		  	border-radius: 40px;
+			height: auto;
+			display: inline-block;
+			background-color: #333;
+		}
+    #logged-content, #barra{
+      display: none;
+    }
+    .barra-usuario{
+      background: #a92439;
+      color: white;
+    }
+    .barra-usuario ul{
+      text-align: right;
+    }
+    .barra-usuario ul li{
+      display: inline-block;
+    }
+    .btn-primary {
+      color: #fff;
+      background-color: #a92439;
+      border-color: #941e31;
+    }
+    .btn-primary:hover {
+      color: #fff;
+      background-color: #e42c49;
+      border-color: #941e31;
+
+    }
+    </style>
+  </head>
+  <body>
+    <div class="barra-usuario" id="barra">
+      <ul>
+        <li id='username'></li>
+        <li><button type="submit" class="btn btn-default" onclick="logout()">Logout</button></li>
+      </ul>
+
+    </div>
+  	<div class="jumbotron text-center">
+	  <h1><img alt="PUCPR" style="width:280px;height:auto;" title="PUCPR" src="https://www.iasp.ws/media/imagegenerator/290x290/upscale(false)/canvascolor(0xffffffff)/2017_07_31-Pucpr.png">
+		  <img alt="Prefeitura de Jaraguá do Sul - SC" style="width:280px;height:auto;" title="Prefeitura de Jaraguá do Sul - SC" src="./prefeitura-municipal-de-jaragua-do-sul-emblema.png">
+	  </h1>
+	</div>
+  <div class="row" id="login-form" style="background: #d9d9e4; padding:1em;">
+    <div class="col-12">
+      <div class="wrapper">
+      <form action="" id="login-form">
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" class="form-control" id="email" placeholder="Seu Email">
+        </div>
+        <div class="form-group">
+          <label for="pwd">Senha:</label>
+          <input type="password" class="form-control" id="pwd" placeholder="Senha Fornecida">
+        </div>
+        <button type="submit" class="btn btn-primary">Enviar</button>
+      </form>
+    </div>
+    </div>
+  </div>
+  <div id="logged-content">
+    <div class="row" >
+        <div class="col-6">
+        <div class="wrapper">
+          <h1>Semáforo Covid-19</h1>
+              <h2>Estado do Covid-19 em Curitiba</h2>
+          <div id="outer">
+            <div id="traffic-light">
+              <div id="green" class="bulb"></div>
+              <div id="yellow" class="bulb"></div>
+              <div id="orange" class="bulb"></div>
+              <div id="red" class="bulb"></div>
+            </div>
+            </div>
+            <div>
+              <h2 id="captionSemaforo">Calculando ...</h2>
+            </div>
+        </div>
+      </div>
+        <div class="col-6">
+        <div class="wrapper">
+          <h1>Legenda Semáforo</h1>
+              <h2>Número de casos confirmados de covid-19 em Curitiba 2020</h2>
+          <div id="controlPanel">
+              <div id="greenCaption" class="button"><div class="captionSpan" style="background-color: green;"></div> rt <= 0.5</div>
+              <div id="yellowCaption" class="button"><div class="captionSpan" style="background-color: yellow;"></div>0.5 < rt < 1 E UTI dispo >= 30%</div>
+              <div id="yellowCaption" class="button"><div class="captionSpan" style="background-color: yellow;"></div>1.0 <= rt < 1.5 E UTI dispo >= 60%</div>
+              <div id="orangeCaption" class="button"><div class="captionSpan" style="background-color: orange;"></div>1.0 <= rt < 1.5 E 30% < UTI dispo < 60%</div>
+              <div id="orangeCaption" class="button"><div class="captionSpan" style="background-color: orange;"></div>0.5 < rt < 1 E UTI dispo >= 10%</div>
+              <div id="redCaption" class="button"><div class="captionSpan" style="background-color: red;"></div>Nenhuma das anteriores</div>
+            </div>
+        </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+        <div class="wrapper">
+              <h1>Casos Confirmados</h1>
+              <h2>Número de casos confirmados de covid-19 em Curitiba 2020</h2>
+              <canvas id="confirmados" width="1280" height="720" bcolor="#8a9ae6"></canvas>
+          </div>
+        </div>
+        <div class="col-6">
+        <div class="wrapper">
+              <h1>Número de Óbitos</h1>
+              <h2>Número de óbitos confirmados por covid-19 em Curitiba 2020</h2>
+              <canvas id="obitos" width="1280" height="720" bcolor="#d64119"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="row justify-content-md-center">
+        <div class="col-6">
+        <div class="wrapper">
+            <h1>Pessoas Recuperadas</h1>
+            <h2>Número de pessoas curadas do covid-19 em Curitiba 2020</h2>
+            <canvas id="recuperados" width="1280" height="720" bcolor="#479c81"></canvas>
+          </div>
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-6">
+        <div class="wrapper">
+            <h1>Ocupação de Leitos</h1>
+            <h2>Ocupação de leitos no Leste do Paraná</h2>
+            <canvas id="ocupacao_uti_adulto" width="1280" height="720" bcolor="#ec5d04"></canvas>
+          </div>
+        </div>
+        <div class="col-6">
+        <div class="wrapper">
+            <h1>rt</h1>
+            <h2>Taxa de transmissão do covid-19 em Curitiba 2020</br>Métrica computada de acordo com Thompson et al. (2019)</h2>
+            <canvas id="rt_thompson" width="1600" height="900" bcolor="#ec5d04"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+         <div class="wrapper">
+            <h1>Previsão de Casos Totais</h1>
+            <h2>Previsão do número de casos em Curitiba</h2>
+            <canvas id="previsao" width="1600" height="900" bcolor="#00ff00"></canvas>
+          </div>
+        </div>
+
+      <div class="col-6">
+          <div class="wrapper">
+            <h1>Previsão de Casos Diários</h1>
+            <h2>Previsão de novos casos diários em Curitiba</h2>
+            <canvas id="previsao_diario" width="1600" height="900" bcolor="#00ff00"></canvas>
+          </div>
+      </div>
+      </div>
+
+      <div class="wrapper">
+          <h1>Equipe Responsável:</h1>
+          <ul>
+            <li>Profa. Dra. Cristina Baena - PPGCS</li>
+            <li>Prof. Dr. Emerson Cabrera Paraiso - PPGIa</li>
+            <li>Prof. Dr. Fabio Duarte - PPGTU</li>
+            <li>Prof. Dr. Rodrigo Firmino – PPGTU</li>
+            <li>Profa. Dra. Paula Trevilatto – PRPPI</li>
+          </ul>
+          <h1>Colaboradores:</h1>
+          <ul>
+            <li>Prof. Dr. Jean Paul Barddal - PPGIa</li>
+            <li>Luiz Bernardo Kummer - doutorando PPGIa</li>
+            <li>Matheus Camilo da Silva - mestrando PPGIa</li>
+          </ul>
+      </div>
+      <div class="wrapper">
+          <h1>Referências e fontes de dados:</h1>
+          <ul>
+            <li><a href="https://doi.org/10.1101/2020.03.31.20048942">A Gaussian Model for the Time Development of SARS-COV-2 Corova Pandemic Disease.</a></li>
+            <li><a href="https://www.jaraguadosul.sc.gov.br/index.php">Prefeitura Municipal de Jaraguá do Sul</a></li>
+            <li><a href="https://reader.elsevier.com/reader/sd/pii/S1755436519300350?token=ADB1EAB019F625239F8E38D64D85F910E995C5DBB844881A5440A3A4B0FD20D9E0CC1EAC56FAAC24F7EE515B69221A67">THOMPSON, R. N. et al. Improved inference of time-varying reproduction numbers during infectious disease outbreaks. Epidemics, v. 29, p. 100356, 2019.</a></li>
+          </ul>
+      </div>
+  </div>
+</div>
+
+  <script type="text/javascript">
+    const base_url = 'https://covid-19-puc-dashboard.herokuapp.com/'
+    // const base_url = 'http://localhost:8080/'
+
+    const TOKEN_KEY = "@Covid-Token";
+    const USERNAME_KEY = "@Covid-User";
+    const isAuthenticated = () => localStorage.getItem(TOKEN_KEY) !== null;
+    const getToken = () => localStorage.getItem(TOKEN_KEY);
+    const getUser = () => localStorage.getItem(USERNAME_KEY)
+
+    const login = (token,username) => {
+      localStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem(USERNAME_KEY, username)
+    };
+
+    const logout = () => {
+      localStorage.removeItem(TOKEN_KEY);
+      location.reload();
+    };
+    var form = document.getElementById("login-form");
+    form.addEventListener("submit", my_func, true);
+
+    // Verifica se esta logado
+    Authentication()
+
+    async function Authentication(){
+      if (isAuthenticated()){
+        axios.defaults.headers.common['Authorization'] = getToken();
+        // Verifica de o Token esta expirado
+        if (await isExpired()) {
+          alert("Sessão Expirada.\nPor favor faça o login novamente.")
+          logout()
+        }
+        document.getElementById('login-form').style.display = "none"
+        document.getElementById('logged-content').style.display = "inherit"
+        document.getElementById('username').innerHTML = "Bem vindo <i>"+getUser()+"</i>"
+        document.getElementById('barra').style.display = 'inherit'
+        defaultGreen()
+        defaultYellow()
+        defaultOrange()
+        defaultRed()
+        consulta_semaforo()
+        consulta("confirmados")
+        consulta("obitos")
+        consulta("recuperados")
+        consulta_barra("ocupacao_uti_adulto")
+        consulta_rt("rt_thompson","2")
+        consulta_previsao("previsao")
+        consulta_previsao_diario("previsao_diario")
+      }else {
+        document.getElementById('login-form').style.display = "inherit"
+        document.getElementById('logged-content').style.display = "none"
+        document.getElementById('barra').style.display = 'none'
+      }
+    }
+
+    async function my_func(event) {
+      event.preventDefault();
+      try {
+        var email = document.getElementById('email').value
+        var pwd = document.getElementById('pwd').value
+        const response = await axios.post(base_url,{email, senha:pwd});
+        // console.log(response.data)
+        login(response.data.token, response.data.email)
+
+        alert("Sucesso")
+        Authentication()
+      } catch (error) {
+        alert("Conta não cadastrada")
+        console.error(error);
+      }
+    };
+
+    async function isExpired(){
+      try {
+        const response = await axios.get(base_url);
+        if(response.data.success){
+          return false;
+        }
+        return true;
+      } catch (error) {
+        console.error(error);
+      }}
+
+    async function consulta_rt(campo, tipo){
+      try {
+        const response = await axios.get(base_url+'consulta_rt/'+tipo);
+
+        drawChartRT(campo, response.data)
+      } catch (error) {
+        alert("Erro: contatar a equipe de desenvolvimento.")
+        console.error(error);
+      }}
+
+    async function consulta_previsao(campo){
+      try {
+        const response = await axios.get(base_url+'previsao/');
+        drawChartPrevisao(response.data, campo)
+      } catch (error) {
+        console.error(error);
+      }}
+
+    async function consulta_previsao_diario(campo){
+      try {
+        const response = await axios.get(base_url+'previsao_diario/');
+        drawChartPrevisao(response.data, campo)
+      } catch (error) {
+        console.error(error);
+      }}
+
+    async function consulta(campo){
+      try {
+        const response = await axios.get(base_url+'consulta/'+campo);
+        drawChart(campo, response.data)
+      } catch (error) {
+        console.error(error);
+      }}
+
+    async function consulta_barra(campo){
+      try {
+        const response = await axios.get(base_url+'consulta/'+campo);
+        drawChart_barra(campo, response.data)
+      } catch (error) {
+        console.error(error);
+      }}
+
+    async function consulta_semaforo(){
+      try {
+        const response = await axios.get(base_url+'consulta_rt/2');
+        var rt_semaforo = response.data.valor[response.data.valor.length-1]
+      } catch (error) {
+        console.error(error);
+      }
+      try {
+        const response = await axios.get(base_url+'consulta/ocupacao_uti_adulto');
+        var ocupacao_semaforo = response.data.ocupacao_uti_adulto[response.data.ocupacao_uti_adulto.length-1]
+      } catch (error) {
+        console.error(error);
+      }
+      drawSemaforo(rt_semaforo,ocupacao_semaforo)
+    }
+
+		function drawChart(campo, dataset){
+			var ctx = document.getElementById(campo);
+			var borderColor = ctx.getAttribute("bcolor");
+			var myChart = new Chart(ctx, {
+		  	type: 'line',
+		  	data: {
+		    	labels: dataset.datas,
+		    	datasets: [
+		      	{
+			        data: dataset[campo],
+			        label: `${campo} em Curitiba`,
+			        borderColor,
+			        fill: false
+		      	},
+		    	]
+		  	}
+			});
+		}
+		function drawChart_barra(campo, dataset){
+			const datas = dataset.datas
+			const leitos = dataset[campo]
+			const final_leitos = []
+			const final_datas = []
+
+			for (var i = 0; i < leitos.length; i++) {
+				if (leitos[i] != "NULL"){
+					final_leitos.push(leitos[i])
+					final_datas.push(datas[i])
+				}
+			}
+			var ctx = document.getElementById(campo);
+			var backgroundColor = 'rgba(255, 99, 132, 0.2)';
+			var borderColor = 'rgba(255,99,132,1)';
+			var myChart = new Chart(ctx, {
+		  	type: 'bar',
+		  	data: {
+		    	labels: final_datas,
+		    	datasets: [
+		      	{
+			        data: final_leitos,
+			        label: `Ocupação porcentagem:`,
+			        backgroundColor,
+            		borderColor,
+            		borderWidth: 1
+		      	},
+		    	]
+		  	},
+		    options: {
+		        scales: {
+
+		            yAxes: [{
+		            ticks: {
+
+		                   min: 0,
+		                   max: 100,
+		                   callback: function(value){return value+ "%"}
+		                },
+										scaleLabel: {
+		                   display: true,
+		                   labelString: "% de leitos UTI ocupados"
+		                }
+		            }]
+		        }
+		    }
+			});
+		}
+
+		function drawChartRT(campo, dataset){
+			var ctx = document.getElementById(campo);
+			var borderColor = ctx.getAttribute("bcolor");
+			var myChart = new Chart(ctx, {
+		  	type: 'line',
+		  	data: {
+		    	labels: dataset.datas,
+		    	datasets: [
+		      	{
+			        data: dataset.valor,
+			        label: `RT em Curitiba`,
+			        borderColor,
+			        fill: false
+		      	},
+		      	{
+			        data: dataset.acima_95,
+			        label: `Margem acima 95%`,
+			        borderColor: "#b19cd9",
+			        fill:'-1',
+		         	order: 4,
+		         	pointRadius:0
+		      	},
+		      	{
+			        data: dataset.abaixo_95,
+			        label: `Margem abaixo 95%`,
+			        borderColor: "#b19cd9",
+			        fill:'-2',
+		         	order: 4,
+		         	pointRadius:0
+		      	}
+		    	]
+		  	},
+		  	options: {
+			scales: {
+				yAxes: [{
+					ticks: {
+						beginAtZero: true,
+						stepSize: 1,
+					},
+				}]
+			},
+			}
+			});
+		}
+
+		function drawChartPrevisao(dataset, campo){
+			var ctx = document.getElementById(campo);
+			var borderColor = ctx.getAttribute("bcolor");
+			var myChart = new Chart(ctx, {
+		  	type: 'line',
+		  	data: {
+		    	labels: dataset.datas,
+		    	datasets: [
+		      	{
+			        data: dataset.num_casos_funcao,
+			        label: `Tendência dos dados`,
+			        borderColor,
+			        fill: false,
+			        order: 1
+		      	},
+		      	{
+			        data: dataset.num_casos,
+			        label: `Número de casos em Curitiba`,
+			        borderColor: "#000",
+			        fill: true,
+			        backgroundColor:"#000",
+		         	showLine: false,
+		         	order: 2
+		      	},
+		      	{
+			        data: dataset.m_erro,
+			        label: `Previsão próximos 7 dias`,
+			        borderColor: "#ff0000",
+			        fill:false,
+		         	order: 3
+		      	},
+		      	{
+			        data: dataset.acima_95,
+			        label: `Margem acima 95%`,
+			        borderColor: "#b19cd9",
+			        fill:'-1',
+		         	order: 4,
+		         	pointRadius:0
+		      	},
+		      	{
+			        data: dataset.abaixo_95,
+			        label: `Margem abaixo 95%`,
+			        borderColor: "#b19cd9",
+			        fill:'-2',
+		         	order: 4,
+		         	pointRadius:0
+		      	}
+		    	]
+		  	},
+
+			});
+		}
+
+
+	function defaultGreen() {
+	  document.getElementById('green').style.backgroundColor = "rgba(0, 128, 0, 0.1)";
+	}
+
+	function defaultYellow() {
+	  document.getElementById('yellow').style.backgroundColor = "rgba(255, 255, 0, 0.1)";
+	}
+
+	function defaultOrange() {
+	  document.getElementById('orange').style.backgroundColor = "rgb(255, 165, 0, 0.1)";
+	}
+
+	function defaultRed() {
+	  document.getElementById('red').style.backgroundColor = "rgb(255, 0, 0, 0.1)";
+	}
+
+	function drawSemaforo(rt,ocupacao){
+		if(rt <= 0.5){
+		  	document.getElementById('green').style.backgroundColor = "rgba(0, 128, 0)";
+		}else if((rt > 0.5 && rt < 1) && ocupacao <= 70){
+		  	document.getElementById('yellow').style.backgroundColor = "rgba(255, 255, 0)";
+		}else if((rt >= 1.0 && rt < 1.5) && ocupacao < 40){
+		  	document.getElementById('yellow').style.backgroundColor = "rgba(255, 255, 0)";
+		}else if((rt >= 1.0 && rt < 1.5) && (ocupacao >= 40 && ocupacao <= 70)){
+  			document.getElementById('orange').style.backgroundColor = "rgb(255, 165, 0)"
+		}else if((rt > 0.5 && rt < 1.0) && (ocupacao < 90)){
+  			document.getElementById('orange').style.backgroundColor = "rgb(255, 165, 0)"
+		}else{
+	  		document.getElementById('red').style.backgroundColor = "rgb(255, 0, 0)";
+		}
+		  	document.getElementById("captionSemaforo").innerHTML = `<b>RT: </b>${rt} <b>Disponibilidade Leitos: </b> ${(100-ocupacao).toFixed(2)}%`;
+	}
+
+    </script>
+  </body>
+</html>
