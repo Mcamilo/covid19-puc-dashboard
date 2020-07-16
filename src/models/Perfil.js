@@ -17,6 +17,12 @@ const PerfilSchema = new Schema({
       default:"user",
       enum:["user", "admin", "superadmin"],
       required:true
+    },
+    acesso:{
+      type:String,
+      default:"puc",
+      enum:["puc","jaragua"],
+      required:true
     }
 },{timestamps:true});
 
