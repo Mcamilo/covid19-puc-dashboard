@@ -31,6 +31,8 @@ function filter_csv(dataset, tipo){
       c['abaixo_95'].push(v.abaixo_95)
       c['acima_95'] = c['acima_95'] || []
       c['acima_95'].push(v.acima_95)
+      c['num_casos_media_movel_7_dias'] = c['num_casos_media_movel_7_dias'] || []
+      c['num_casos_media_movel_7_dias'].push(v.num_casos_media_movel_7_dias)
     }else if (v.tipo === tipo && v.forecast == 1) {
       c['datas'] = c['datas'] || []
       c['datas'].push(v.data)
@@ -40,6 +42,8 @@ function filter_csv(dataset, tipo){
       c['abaixo_95'].push(v.abaixo_95)
       c['acima_95'] = c['acima_95'] || []
       c['acima_95'].push(v.acima_95)
+      c['num_casos_media_movel_7_dias'] = c['num_casos_media_movel_7_dias'] || []
+      c['num_casos_media_movel_7_dias'].push(v.num_casos_media_movel_7_dias)
     }
     return c;
   }, {})

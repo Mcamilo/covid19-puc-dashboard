@@ -170,14 +170,16 @@
         <div class="wrapper">
           <h1>Legenda Semáforo</h1>
               <h2>Número de casos confirmados de covid-19 em Curitiba 2020</h2>
-          <div id="controlPanel">
-              <div id="greenCaption" class="button"><div class="captionSpan" style="background-color: green;"></div> Rt <= 0.5 OU Cura disponível</div>
-              <div id="yellowCaption" class="button"><div class="captionSpan" style="background-color: yellow;"></div>0.5 < Rt < 1 E % UTI dispo > 30%</div>
-              <div id="orangeCaption" class="button"><div class="captionSpan" style="background-color: orange;"></div>Rt >= 1 OU % UTI dispo <= 30%</div>
-              <div id="redCaption" class="button"><div class="captionSpan" style="background-color: red;"></div>Lockdown</div>
-            </div>
-        </div>
-        </div>
+              <div id="controlPanel">
+                <div id="greenCaption" class="button"><div class="captionSpan" style="background-color: green;"></div> rt <= 0.5</div>
+                <div id="yellowCaption" class="button"><div class="captionSpan" style="background-color: yellow;"></div>0.5 < rt < 1 E UTI dispo >= 30%</div>
+                <div id="yellowCaption" class="button"><div class="captionSpan" style="background-color: yellow;"></div>1.0 <= rt < 1.5 E UTI dispo >= 60%</div>
+                <div id="orangeCaption" class="button"><div class="captionSpan" style="background-color: orange;"></div>1.0 <= rt < 1.5 E 30% < UTI dispo < 60%</div>
+                <div id="orangeCaption" class="button"><div class="captionSpan" style="background-color: orange;"></div>0.5 < rt < 1 E UTI dispo >= 10%</div>
+                <div id="redCaption" class="button"><div class="captionSpan" style="background-color: red;"></div>Nenhuma das anteriores</div>
+              </div>
+          </div>
+          </div>
       </div>
       <div class="row">
         <div class="col-6">
@@ -215,7 +217,7 @@
         <div class="col-6">
         <div class="wrapper">
             <h1>rt</h1>
-            <h2>Taxa de transmissão do covid-19 em Curitiba 2020</br>Métrica computada de acordo com Thompson et al. (2019)</h2>
+            <h2>Taxa de transmissão do covid-19 em Curitiba 2020</br>Métrica computada de acordo com Bettencourt et al. (2019)</h2>
             <canvas id="rt_thompson" width="1600" height="900" bcolor="#ec5d04"></canvas>
           </div>
         </div>
@@ -259,8 +261,9 @@
           <ul>
             <li><a href="https://doi.org/10.1101/2020.03.31.20048942">A Gaussian Model for the Time Development of SARS-COV-2 Corova Pandemic Disease.</a></li>
             <li><a href="https://www.curitiba.pr.gov.br/">Prefeitura Municipal de Curitiba</a></li>
-        <li><a href="http://www.saude.pr.gov.br/modules/conteudo/conteudo.php?conteudo=3507">Secretaria de Saúde do Paraná</a></li>
+            <li><a href="http://www.saude.pr.gov.br/modules/conteudo/conteudo.php?conteudo=3507">Secretaria de Saúde do Paraná</a></li>
             <li><a href="https://reader.elsevier.com/reader/sd/pii/S1755436519300350?token=ADB1EAB019F625239F8E38D64D85F910E995C5DBB844881A5440A3A4B0FD20D9E0CC1EAC56FAAC24F7EE515B69221A67">THOMPSON, R. N. et al. Improved inference of time-varying reproduction numbers during infectious disease outbreaks. Epidemics, v. 29, p. 100356, 2019.</a></li>
+            <li><a href="https://journals.plos.org/plosone/article/comments?id=10.1371/journal.pone.0002185">BETTENCOURT, Luis MA; RIBEIRO, Ruy M. Real time bayesian estimation of the epidemic potential of emerging infectious diseases. PLoS One, v. 3, n. 5, p. e2185, 2008.</a></li>
           </ul>
       </div>
   </div>
@@ -566,7 +569,15 @@
 			        fill:'-2',
 		         	order: 4,
 		         	pointRadius:0
-		      	}
+            },
+            {
+			        data: dataset.num_casos_media_movel_7_dias,
+			        label: `Média Móvel de 7 Dias`,
+			        borderColor: "#0052a3",
+			        fill:'-1',
+		         	order: 4,
+		         	pointRadius:0
+		      	},
 		    	]
 		  	},
 
@@ -590,12 +601,28 @@
 	  document.getElementById('red').style.backgroundColor = "rgb(255, 0, 0, 0.1)";
 	}
 
-	function drawSemaforo(rt,ocupacao){
+	// function drawSemaforo(rt,ocupacao){
+	// 	if(rt <= 0.5){
+	// 	  	document.getElementById('green').style.backgroundColor = "rgba(0, 128, 0)";
+	// 	}else if(rt < 1 && ocupacao <= 70){
+	// 	  	document.getElementById('yellow').style.backgroundColor = "rgba(255, 255, 0)";
+	// 	}else if(rt >= 1 || ocupacao > 70){
+  // 			document.getElementById('orange').style.backgroundColor = "rgb(255, 165, 0)"
+	// 	}else{
+	//   		document.getElementById('red').style.backgroundColor = "rgb(255, 0, 0)";
+	// 	}
+	// 	  	document.getElementById("captionSemaforo").innerHTML = `<b>RT: </b>${rt} <b>Disponibilidade Leitos: </b> ${(100-ocupacao).toFixed(2)}%`;
+	// }
+  function drawSemaforo(rt,ocupacao){
 		if(rt <= 0.5){
 		  	document.getElementById('green').style.backgroundColor = "rgba(0, 128, 0)";
-		}else if(rt < 1 && ocupacao <= 70){
+		}else if((rt > 0.5 && rt < 1) && ocupacao <= 70){
 		  	document.getElementById('yellow').style.backgroundColor = "rgba(255, 255, 0)";
-		}else if(rt >= 1 || ocupacao > 70){
+		}else if((rt >= 1.0 && rt < 1.5) && ocupacao < 40){
+		  	document.getElementById('yellow').style.backgroundColor = "rgba(255, 255, 0)";
+		}else if((rt >= 1.0 && rt < 1.5) && (ocupacao >= 40 && ocupacao <= 70)){
+  			document.getElementById('orange').style.backgroundColor = "rgb(255, 165, 0)"
+		}else if((rt > 0.5 && rt < 1.0) && (ocupacao < 90)){
   			document.getElementById('orange').style.backgroundColor = "rgb(255, 165, 0)"
 		}else{
 	  		document.getElementById('red').style.backgroundColor = "rgb(255, 0, 0)";
