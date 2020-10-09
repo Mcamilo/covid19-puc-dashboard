@@ -189,4 +189,4 @@ data,nome_metrica,valor,abaixo_95,acima_95,tipo
 2020-10-06,"Rt (Thompson et al., 2019)",0.950,0.795,1.109,2
 2020-10-07,"Rt (Thompson et al., 2019)",0.952,0.800,1.128,2
 2020-10-08,"Rt (Thompson et al., 2019)",0.932,0.775,1.092,2
-2020-10-09,"Rt (Thompson et al., 2019)",0.866,0.720,1.028,2
+2020-10-09,"Rt (Thompson et al., 2019)",0.866,0.720,1.028,2 

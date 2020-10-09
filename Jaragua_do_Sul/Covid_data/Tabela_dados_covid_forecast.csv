@@ -410,4 +410,4 @@ data,tipo,num_casos,num_casos_media_movel_7_dias,num_casos_funcao,forecast,abaix
 2020-10-13,diario,3,NULL,NULL,1,-24.589,31.419
 2020-10-14,diario,3,NULL,NULL,1,-24.875,31.134
 2020-10-15,diario,3,NULL,NULL,1,-25.140,30.868
-2020-10-16,diario,3,NULL,NULL,1,-25.387,30.622
+2020-10-16,diario,3,NULL,NULL,1,-25.387,30.622 
