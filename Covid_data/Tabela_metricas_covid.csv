@@ -224,3 +224,4 @@ data,nome_metrica,valor,abaixo_95,acima_95,tipo
 2020-11-09,"Rt (Bettencourt and Ribeiro, 2008)",0.884,0.656,1.152,2
 2020-11-10,"Rt (Bettencourt and Ribeiro, 2008)",0.987,0.759,1.256,2
 2020-11-11,"Rt (Bettencourt and Ribeiro, 2008)",1.149,0.923,1.415,2
+2020-11-12,"Rt (Bettencourt and Ribeiro, 2008)",1.254,1.032,1.515,2
